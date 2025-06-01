@@ -27,20 +27,20 @@ export default function AuthNavbar() {
       
     <div className="flex items-center gap-2">
         <Image width={8} height={8} src="/logo.png" alt="Nidhaan Logo" className="h-8 w-8" />
-        <span className="font-bold text-green-700 text-xl">NIDHAAN</span>
+        <span className="font-bold text-teal-600 text-xl">NIDHAAN</span>
         <div className="ml-4 flex items-center gap-2 cursor-pointer">
-          <FaMapMarkerAlt className="text-green-800" />
+          <FaMapMarkerAlt className="text-teal-600" />
         <div onClick={() => setShowAddressModal(true)}>
             <p className="text-xs text-gray-500">Deliver to {selectedAddress?.full_name || 'Guest'}</p>
             <p className="text-sm font-semibold text-gray-800">{selectedAddress?.city} {selectedAddress?.pincode}</p>
         </div>
 </div>
       </div>
-    <div className='flex flex-row font-bold items-center text-[#165D59]'>
-        <button className="bg-white font-bold px-4 py-2 flex items-center gap-2 relative" onClick={() => router.push('/cart')}>
+    <div className='flex flex-row font-bold items-center text-teal-700'>
+        <button className="bg-white font-bold px-4 py-2 flex items-center gap-2 relative" onClick={() => router.push('/a/cart')}>
           <FaCartPlus size={25} />
           {itemNumberCart > 0 && (
-            <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs font-semibold rounded-lg h-5 w-5 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-teal-600 text-white text-xs font-semibold rounded-lg h-5 w-5 flex items-center justify-center">
               {itemNumberCart}
             </span>
           )}
@@ -50,12 +50,12 @@ export default function AuthNavbar() {
         </button>
         {!userName && (
           <>
-        <button className="bg-white font-bold px-4 py-2 flex items-center gap-2" onClick={() => router.push('/signup')}>
+        <button className="bg-white font-bold px-4 py-2 flex items-center gap-2" onClick={() => router.push('/auth/signup')}>
             Signup
         </button><p> | </p>
-        <button className="bg-white font-bold px-4 py-2 flex items-center gap-2" onClick={() => router.push('/signin')}>
+        <button className="bg-white font-bold px-4 py-2 flex items-center gap-2" onClick={() => router.push('/auth/login')}>
         Login
-        <FaUser className="text-[#165D59]" />
+        <FaUser className="text-teal-700" />
       </button>
       </>)}
       {userName && (<button className="bg-white font-bold px-4 py-2 flex items-center gap-2" onClick={LogOut}>

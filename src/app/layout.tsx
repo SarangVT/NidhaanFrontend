@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
+import Footer from "./components/Footer";
+import FAQ from "./components/FAQ";
+import AuthNavbar from './topNavbar';
+import ServicesNavbar from './servicesNavbar';
 
 export const metadata: Metadata = {
   title: "Nidhaan",
@@ -14,9 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className="flex flex-col min-h-screen">
         <Providers>
+          <div className="fixed top-0 left-0 w-full z-20">
+              <AuthNavbar/>
+              <ServicesNavbar/>
+          </div>
+          <div className="sm:mb-32 md:mb-32 lg:mb-28"></div>
           {children}
+          <FAQ/>
+          <Footer/>
         </Providers>
       </body>
     </html>
