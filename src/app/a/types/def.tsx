@@ -7,7 +7,7 @@ export type CartProduct = {
   image: string;
   current_price: number; // could be number if parsed
   offers: string; // e.g., "{10% Off}" – possibly parse to string[]
-  highlights: string; // e.g., "{Relieves pain,Reduces fever}" – possibly parse to string[]
+  highlights: string[]; // e.g., "{Relieves pain,Reduces fever}" – possibly parse to string[]
   product_details: string;
   manufacturer_details: string;
   marketer_details: string;

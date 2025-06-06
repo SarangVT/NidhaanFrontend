@@ -1,10 +1,9 @@
 import { FaDumbbell } from "react-icons/fa";
 import i1 from "./brand.png";
 import Image, { StaticImageData } from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function SearchBrands() {
-  const router = useRouter();
   const Icons = [
     { title: "Dolo 650", src: i1 },
     { title: "Glucon-D", src: i1 },
@@ -32,7 +31,7 @@ export default function SearchBrands() {
       <div className="font-bold text-2xl py-10">Shop brands you prefer</div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {Icons.map((item, idx) => (
-          <div key={idx} onClick={() => router.push(`/pharmacy/categories?id=${idx}`)}>{Icon(item.title, item.src)}</div>
+          <Link href='/pharmacy/categories?id=${idx}' key={idx}><div key={idx}>{Icon(item.title, item.src)}</div></Link>
         ))}
       </div>
     </div>

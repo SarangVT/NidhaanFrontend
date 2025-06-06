@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function HealthConcernIcons () {
     return (
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 justify-around px-10 gap-4 py-8">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 py-8 justify-items-center">
             <div className="flex flex-row w-48 h-20 px-2 py-2 bg-[#DDEB9D] rounded-lg font-bold items-center">
                 <Image src={i1} alt={"Doctor Appointment"} className="h-14 w-24"/>
                  <div className="px-4 rounded-lg flex items-center">

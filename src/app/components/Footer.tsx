@@ -1,7 +1,7 @@
 import { FaLinkedin } from "react-icons/fa"
 import { i1, i2, i3, i4, i5} from "../../../assets/FooterIcons/FooterIcons"
 import Image from "next/image"
-
+// />> --master-key P-AmW6JgciyRY-uQKo0gs32GtaAR-f8fvpCgk4bXsTw <<
 export default function Footer () {
     return (
         <div className="flex flex-col mt-auto">
