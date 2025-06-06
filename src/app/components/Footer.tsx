@@ -13,10 +13,10 @@ export default function Footer () {
                 <div className="flex flex-col">
                     <div className="flex justify-start text-2xl font-bold py-10">Connect with Us</div>
                     <div className="flex flex-row gap-8 justify-start">
-                        <Image src={i1} alt={""} className="w-14 h-14 rounded-full"/>
-                        <Image src={i2} alt={""} className="w-14 h-14 rounded-lg"/>
-                        <Image src={i3} alt={""} className="w-14 h-12"/>
-                        <Image src={i4} alt={""} className="w-12 h-12 rounded-lg"/>
+                        <Image src={i1} alt={""} className="w-12 h-12"/>
+                        <Image src={i2} alt={""} className="w-12 h-12"/>
+                        <Image src={i3} alt={""} className="w-12 h-12"/>
+                        <Image src={i4} alt={""} className="w-12 h-12"/>
                     </div>
                 </div>
             </div>

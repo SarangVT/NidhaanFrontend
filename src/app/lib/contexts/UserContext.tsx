@@ -63,19 +63,15 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Fake data simulating backend response for cart item count
   useEffect(() => {
     if (userId) {
-      // Simulate API call delay
       setTimeout(() => {
-        // Fake cart item count
         const fakeCartItemCount = 3;
         setItemNumberCart(fakeCartItemCount);
       }, 500);
     }
   }, [userId]);
 
-  // Fake data simulating backend response for user addresses
   useEffect(() => {
     if (userId) {
       setTimeout(() => {
