@@ -27,7 +27,6 @@ export function ShopByCategory ({category, items}: ShopByCategoryProps) {
                 </div>
                 <button className="bg-yellow-400 rounded-lg p-2 text-white font-bold mt-4"
                >Add To Cart</button>
-                {/*onClick={() => addToCart(id, 1)}*/}
             </div>
         );
     }
@@ -37,7 +36,7 @@ export function ShopByCategory ({category, items}: ShopByCategoryProps) {
             <div className="font-bold text-2xl px-8 lg:px-28 py-10">{category}</div>
             <div className="flex flex-row overflow-x-auto overflow-y-hidden hide-scrollbar px-8 lg:px-24">
                 {items.map((item, index) => (
-                    <div><Item key={index} id={item.id} title={item.title} desc={item.product_details} src={item.image} current_price={item.current_price} mrp={item.mrp}/></div>
+                    <div key={index}><Item id={item.id} title={item.title} desc={item.product_details} src={item.image} current_price={item.current_price} mrp={item.mrp}/></div>
                 ))}
             </div>
         </div>
@@ -52,7 +51,7 @@ export default function ShopByCategoryComp () {
     };
     return (
         <div>
-            <ShopByCategory category="Trending Now" items={getItemsByTag("Trending Now")} />
+            <ShopByCategory category="Trending Now" items={getItemsByTag("Trending Now")}/>
             <ShopByCategory category="Deals of the Day" items={getItemsByTag("Deals of the Day")} />
             <ShopByCategory category="Ayurveda Care" items={getItemsByTag("Ayurveda Care")} />
             <ShopByCategory category="Best Deals Now" items={getItemsByTag("Best Deals Now")} />

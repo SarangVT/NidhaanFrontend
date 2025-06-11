@@ -1,29 +1,33 @@
 'use client'
 import { useUserData } from './lib/contexts/UserContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // import AddressModal from '../Authentication/AddressModal';
 import { useRouter } from "next/navigation";
 import { FaCartPlus, FaPhone, FaPhoneAlt, FaPhoneSlash, FaPhoneSquare, FaUser, FaMapMarkerAlt } from 'react-icons/fa';
 import Image from 'next/image';
+import AddressModal from './components/a/AddressModal';
 
 export default function AuthNavbar() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
-  const { setUserName, userName, itemNumberCart,selectedAddress, setSelectedAddress } = useUserData();
+  const { setUserName, userName, itemNumberCart,selectedAddress, setSelectedAddress, setUserId } = useUserData();
   const handleRedirect = () => {
     window.open('https://wa.me/917754858641', '_blank');
   }
+
   const LogOut = async () => {
     try {
         localStorage.removeItem("authToken");
         setUserName(null);
+        setUserId(undefined);
         router.replace('/');
     } catch (error) {
     }
   };
   return (
-    <div className="w-full flex justify-between items-center px-2 md:px-24 py-3 bg-white shadow-md">
+    <div className="w-full flex justify-between items-center px-2 md:px-24 py-3 bg-white shadow-md z-50">
       
     <div className="flex items-center gap-2">
         <Image width={8} height={8} src="/logo.png" alt="Nidhaan Logo" className="h-8 w-8" />
@@ -62,10 +66,10 @@ export default function AuthNavbar() {
             Logout
         </button>)}
     </div>
-    {/* <AddressModal
+    <AddressModal
       open={showAddressModal}
       setOpen={setShowAddressModal}
-    /> */}
+    />
     </div>
   )
 }

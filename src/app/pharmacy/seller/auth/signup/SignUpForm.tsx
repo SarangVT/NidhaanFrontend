@@ -89,9 +89,9 @@ export default function SignUpForm() {
 
     if (token) {
       localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(data.createUser.user));
+      localStorage.setItem('user', JSON.stringify(data.verifyUser.user));
     }
-    window.location.href="/";
+    router.push("/")
       
     } catch (err) {
         let message = 'Something went wrong';

@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import {jwtDecode} from 'jwt-decode';
 
 interface DecodedToken {
-  username: string;
+  email: string;
   userId: string;
 }
 
@@ -49,7 +49,7 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
   const setUserFromToken = (token: string) => {
     try {
       const decoded = jwtDecode<DecodedToken>(token);
-      setUserName(decoded.username);
+      setUserName(decoded.email);
       setUserId(decoded.userId);
     } catch (error) {
       console.error('Invalid token:', error);
@@ -79,39 +79,28 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
           {
             id: 1,
             user_id: Number(userId),
-            full_name: 'John Doe',
-            mobile_number: '1234567890',
-            pincode: '123456',
-            house_address: '123, Maple Street',
-            street_address: 'Maple Street',
-            landmark: 'Near City Park',
-            city: 'Metropolis',
-            state: 'StateName',
-            country: 'CountryName',
+            full_name: 'Sarang Thakare',
+            mobile_number: '9011964178',
+            pincode: '444020',
+            house_address: 'IIT Indore',
+            street_address: 'Khandwa Road',
+            landmark: 'Near IT Park',
+            city: 'Indore',
+            state: 'MP',
+            country: 'India',
             defaultAddress: true,
-          },
-          {
-            id: 2,
-            user_id: Number(userId),
-            full_name: 'John Doe',
-            mobile_number: '1234567890',
-            pincode: '654321',
-            house_address: '456, Oak Avenue',
-            street_address: 'Oak Avenue',
-            landmark: 'Near Shopping Mall',
-            city: 'Metropolis',
-            state: 'StateName',
-            country: 'CountryName',
-            defaultAddress: false,
           },
         ];
         setAddress(fakeAddresses);
 
-        // Set the default address or first address as selected
         const defaultAddr =
           fakeAddresses.find((a) => a.defaultAddress) ?? fakeAddresses[0] ?? null;
         setSelectedAddress(defaultAddr);
       }, 500);
+    }
+    else {
+      setSelectedAddress(null);
+      setItemNumberCart(0);
     }
   }, [userId]);
 

@@ -1,4 +1,8 @@
-type Address = {
+"use client"
+
+import { useRouter } from "next/navigation";
+
+export type Address = {
   name: string;
   details: string;
   phone: string;
@@ -23,18 +27,19 @@ const mockAddresses: Address[] = [
 ];
 
 export default function Address() {
-
+  const router = useRouter();
   return (
     <div className="flex flex-col">
+      <div className="mb-8"></div>
       <h1 className="text-3xl font-bold mb-12 flex justify-center">Your Addresses</h1>
       <div className="flex justify-center">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
           <div
+          onClick={() => router.push('/a/addresses/add')}
             className="border-dashed border-2 border-gray-400 rounded flex items-center justify-center h-32 cursor-pointer hover:bg-gray-50"
           >
             + Add address
           </div>
-
           {mockAddresses.map((addr, i) => (
             <div key={i} className="border rounded p-4 relative">
               {addr.default && (

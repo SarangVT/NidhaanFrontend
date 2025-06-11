@@ -27,7 +27,7 @@ export default function ServicesNavbar() {
   return (
     <>
       {isMobile ? (
-        <nav className="bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold p-3 text-[18px] px-6 flex items-center justify-between w-full">
+        <nav className="bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold p-3 text-[18px] px-6 flex items-center justify-between w-full z-50">
           <div className="cursor-pointer" onClick={() => setMenuOpen(!menuOpen)}>
             <FaBars size={28} />
           </div>
