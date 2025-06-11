@@ -6,6 +6,7 @@ import ShopByCategory from "../ShopByCategory";
 import { useState } from "react";
 import { products } from "../products";
 import SearchBrands from "../SearchBrands";
+import ShopByCategoryComp from "../ShopByCategory";
 
 export default function PharmacyByCategories () {
 
@@ -21,11 +22,7 @@ export default function PharmacyByCategories () {
                 </div>
 
                 <div className="space-y-12">
-                    <ShopByCategory category="Trending Now" items={getItemsByTag("Trending Now")} />
-                    <ShopByCategory category="Deals of the Day" items={getItemsByTag("Deals of the Day")} />
-                    <ShopByCategory category="Ayurveda Care" items={getItemsByTag("Ayurveda Care")} />
-                    <ShopByCategory category="Best Deals Now" items={getItemsByTag("Best Deals Now")} />
-                    <ShopByCategory category="Popular Combo Deals" items={getItemsByTag("Popular Combo Deals")} />
+                    <ShopByCategoryComp/>
                     <SearchBrands />
                 </div>
             </div>
