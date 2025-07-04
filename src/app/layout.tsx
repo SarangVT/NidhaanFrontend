@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen">
         <script src="https://accounts.google.com/gsi/client" async defer></script>
         <Providers>
-          <div className="fixed top-0 left-0 w-full z-20">
+          <div className="fixed top-0 left-0 w-full z-50">
               <AuthNavbar/>
               <ServicesNavbar/>
           </div>

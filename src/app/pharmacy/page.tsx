@@ -1,9 +1,12 @@
+"use client"
+
 import HealthConcernIcons from "./HealthConcernIcons";
 import ImageSlider from "../components/HomepageImageSlider";
 import SearchBrands from "./SearchBrands";
 import SearchBar from "./SearchBar";
 import Image from "next/image";
 import ShopByCategoryComp from "./ShopByCategory";
+import { useEffect, useState } from "react";
 
 export default function PharmacyDelivery () {
     // useEffect(() => {
@@ -19,6 +22,12 @@ export default function PharmacyDelivery () {
     //     fetchItems();
     // }, []);
 
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+    setIsMounted(true);
+    }, []);
+
     return (
         <div>
             <div className="flex flex-col w-full overflow-x-hidden">
@@ -33,7 +42,7 @@ export default function PharmacyDelivery () {
                     Buy Medicines and Essentials
                     </h1>
                     <div className="w-full max-w-3xl px-2 z-10 text-black font-semibold">
-                    <SearchBar />
+                    {isMounted && <SearchBar />}
                     </div>
                 </div>
                 </div>

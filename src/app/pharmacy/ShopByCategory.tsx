@@ -1,61 +1,151 @@
-"use client"
-// import api from "../../api/backend";
+"use client";
+import { gql, useLazyQuery } from "@apollo/client";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-// import { addToCart } from "../CartPage/helperFunctions";
-// import { useUserData } from "../Context/userContext";
-import { useEffect } from "react";
-import { useState } from "react";
-import { Product, ShopByCategoryProps } from './types/def';
-import { products } from "./products";
-import Image from "next/image";
 
-export function ShopByCategory ({category, items}: ShopByCategoryProps) {
+type Product = {
+  id: string;
+  title: string;
+  product_details: string;
+  tags: string[];
+  image: string;
+  mrp: number;
+  current_price: number;
+};
 
-    const router = useRouter();
-    function Item({id, title, desc, src, current_price, mrp}: {id: string, title: string, desc: string, src: string, current_price: number, mrp: number}) {
-        const discount = Math.round(((mrp - current_price) * 100) / mrp);
-        return (
-            <div className="flex flex-col min-w-60 max-w-60 mx-5">
-                <div onClick={() => router.push(`/pharmacy/item?id=${id}`)} className="flex flex-col min-w-60 max-w-60 min-h-[320px] max-h-[320px] px-5 py-2 border rounded shadow-md bg-white gap-2">
-                    <img src={src} alt={title} className="w-full h-32 object-contain"/>
-                    <div className="font-bold text-md break-words h-12 line-clamp-2 mt-2">{title}</div>
-                    <div className="text-gray-500 text-sm line-clamp-1 w-full h-6">{desc}</div>
-                    <div className="text-sm text-red-600 font-medium">
-                        ₹{mrp} <span className="text-green-600">({discount}% Off)</span>
-                    </div>
-                    <div className="text-lg font-bold text-black">₹{current_price}</div>
-                </div>
-                <button className="bg-yellow-400 rounded-lg p-2 text-white font-bold mt-4"
-               >Add To Cart</button>
-            </div>
-        );
+type GetProductsPaginatedResponse = {
+  getProductsPaginated: {
+    items: Product[];
+    nextCursor: number | null;
+  };
+};
+
+const GET_PRODUCTS_PAGINATED = gql`
+  query GetProductsPaginated($cursor: Int, $limit: Int!) {
+    getProductsPaginated(cursor: $cursor, limit: $limit) {
+      items {
+        id
+        title
+        product_details
+        tags
+        image
+        mrp
+        current_price
+      }
+      nextCursor
     }
+  }
+`;
 
+export default function ShopByCategoryComp() {
+  const router = useRouter();
+
+  const [productsByTag, setProductsByTag] = useState<Record<string, Product[]>>({});
+  const [cursor, setCursor] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchingRef = useRef(false);
+
+  const [fetchProducts, { loading, error }] = useLazyQuery<GetProductsPaginatedResponse>(
+    GET_PRODUCTS_PAGINATED,
+    {
+      fetchPolicy: "network-only",
+      onCompleted: (data) => {
+        fetchingRef.current = false;
+
+        const newItems = data.getProductsPaginated.items;
+        const newCursor = data.getProductsPaginated.nextCursor;
+
+        const grouped: Record<string, Product[]> = {};
+        for (const item of newItems) {
+          for (const tag of item.tags?.length ? item.tags : ["Untagged"]) {
+            if (!grouped[tag]) grouped[tag] = [];
+            grouped[tag].push(item);
+          }
+        }
+
+        setProductsByTag((prev) => {
+          const updated = { ...prev };
+          for (const tag in grouped) {
+            updated[tag] = [...(updated[tag] || []), ...grouped[tag]];
+          }
+          return updated;
+        });
+
+        setCursor(newCursor);
+        setHasMore(newCursor !== null);
+      },
+      onError: (err) => {
+        console.error("GraphQL error:", err.message);
+        fetchingRef.current = false;
+      },
+    }
+  );
+
+  useEffect(() => {
+    // Initial fetch only once
+    if (!fetchingRef.current) {
+      fetchingRef.current = true;
+      fetchProducts({ variables: { cursor: null, limit: 20 } });
+    }
+  }, []);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastElementRef = useCallback(
+    (node: Element | null) => {
+      if (loading || !hasMore) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !fetchingRef.current) {
+          fetchingRef.current = true;
+          fetchProducts({ variables: { cursor, limit: 20 } });
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [cursor, hasMore, loading, fetchProducts]
+  );
+
+  const renderItem = (item: Product) => {
+    const discount = Math.round(((item.mrp - item.current_price) * 100) / item.mrp);
     return (
-        <div>
-            <div className="font-bold text-2xl px-8 lg:px-28 py-10">{category}</div>
-            <div className="flex flex-row overflow-x-auto overflow-y-hidden hide-scrollbar px-8 lg:px-24">
-                {items.map((item, index) => (
-                    <div key={index}><Item id={item.id} title={item.title} desc={item.product_details} src={item.image} current_price={item.current_price} mrp={item.mrp}/></div>
-                ))}
-            </div>
+      <div key={item.id} className="flex flex-col min-w-60 max-w-60 mx-5">
+        <div
+          onClick={() => router.push(`/pharmacy/item/${item.id}`)}
+          className="flex flex-col min-w-60 max-w-60 min-h-[320px] max-h-[320px] px-5 py-2 border rounded shadow-md bg-white gap-2"
+        >
+          <img src={item.image} alt={item.title} className="w-full h-32 object-contain" />
+          <div className="font-bold text-md h-12 line-clamp-2 mt-2">{item.title}</div>
+          <div className="text-gray-500 text-sm h-6 line-clamp-1">{item.product_details}</div>
+          <div className="text-sm text-red-600 font-medium">
+            ₹{item.mrp} <span className="text-green-600">({discount}% Off)</span>
+          </div>
+          <div className="text-lg font-bold text-black">₹{item.current_price}</div>
         </div>
-    )
-}
+        <button className="bg-yellow-400 rounded-lg p-2 text-white font-bold mt-4">
+          Add To Cart
+        </button>
+      </div>
+    );
+  };
 
-export default function ShopByCategoryComp () {
-    const [productList, setProductList] = useState<Product[]>(products);
-
-    const getItemsByTag = (tag: string) => {
-        return productList.filter(item => item.tags?.includes(tag));
-    };
-    return (
-        <div>
-            <ShopByCategory category="Trending Now" items={getItemsByTag("Trending Now")}/>
-            <ShopByCategory category="Deals of the Day" items={getItemsByTag("Deals of the Day")} />
-            <ShopByCategory category="Ayurveda Care" items={getItemsByTag("Ayurveda Care")} />
-            <ShopByCategory category="Best Deals Now" items={getItemsByTag("Best Deals Now")} />
-            <ShopByCategory category="Popular Combo Deals" items={getItemsByTag("Popular Combo Deals")} />
+  return (
+    <div>
+      {Object.entries(productsByTag).map(([tag, items], index, arr) => (
+        <div key={tag}>
+          <div className="font-bold text-2xl px-8 lg:px-28 py-10">{tag}</div>
+          <div
+            className="flex flex-row overflow-x-auto hide-scrollbar px-8 lg:px-24"
+            ref={index === arr.length - 1 ? lastElementRef : null}
+          >
+            {items.map(renderItem)}
+          </div>
         </div>
-    )
+      ))}
+      {loading && <div className="text-center py-10">Loading more...</div>}
+      {error && <div className="text-center text-red-500 py-4">Error: {error.message}</div>}
+    </div>
+  );
 }

@@ -51,7 +51,7 @@ export default function SearchBar() {
       debouncedSearch(inputValue || "")
     },
     onSelectedItemChange: ({ selectedItem }) => {
-      if (selectedItem) router.push(`/item?id=${selectedItem.id}`)
+      if (selectedItem) router.push(`/pharmacy/item/${selectedItem.id}`)
     },
   })
 

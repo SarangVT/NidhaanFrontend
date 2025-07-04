@@ -37,7 +37,7 @@ export default function ServicesNavbar() {
               <div className="flex flex-col p-4 gap-4">
                 <div className="cursor-pointer" onClick={() => handleNavigate('/')}>Home</div>
                 <div className="cursor-pointer" onClick={() => handleNavigate('/pharmacy')}>Medicines</div>
-                <div className="cursor-pointer" onClick={() => handleNavigate('/')}>Consult Doctor</div>
+                <div className="cursor-pointer" onClick={() => handleNavigate('/consult-doctor')}>Consult Doctor</div>
                 <div className="cursor-pointer" onClick={() => handleNavigate('/')}>Gym and Yoga</div>
                 <div className="cursor-pointer" onClick={() => handleNavigate('/')}>Diagnostics</div>
                 <div className="cursor-pointer" onClick={() => handleNavigate('/mental-health')}>Mental Health</div>
@@ -46,10 +46,10 @@ export default function ServicesNavbar() {
           )}
         </nav>
       ) : (
-        <div className="flex flex-row gap-12 bg-teal-600 text-white font-bold p-3 text-lg justify-around pl-6 items-center w-full z-20">
+        <div className="flex flex-row gap-12 bg-teal-600 text-white font-bold p-3 text-lg justify-around pl-6 items-center w-full z-50">
           <div className="cursor-pointer" onClick={() => router.push('/')}>Home</div>
           <div className="cursor-pointer" onClick={() => router.push('/pharmacy')}>Medicines</div>
-          <div className="cursor-pointer" onClick={() => router.push('/')}>Consult Doctor</div>
+          <div className="cursor-pointer" onClick={() => router.push('/consult-doctor')}>Consult Doctor</div>
           <div className="cursor-pointer" onClick={() => router.push('/')}>Gym and Yoga</div>
           <div className="cursor-pointer" onClick={() => router.push('/')}>Diagnostics</div>
           <div className="cursor-pointer" onClick={() => router.push('/mental-health')}>Mental Health</div>
