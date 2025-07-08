@@ -17,3 +17,16 @@ export type CartProduct = {
   tags: string; // e.g., "{Trending Now,Best Deals Now}" – possibly parse to string[]
   quantity: number;
 };
+
+export type Address = {
+  id: number;
+  name?: string;
+  phone?: string;
+  address?: string;
+  locality?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  landmark?: string;
+  isDefault: boolean;
+};

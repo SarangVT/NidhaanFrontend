@@ -1,24 +1,91 @@
-"use client"
-
+"use client";
 import { useRouter } from "next/navigation";
+import { gql, useMutation } from "@apollo/client";
+import { useEffect, useState } from "react";
+import { useUserData } from "@/app/lib/contexts/UserContext";
+
+const CREATE_USER_ADDRESS = gql`
+  mutation CreateUserAddress(
+    $userId: Int!
+    $name: String
+    $phone: String
+    $pincode: String
+    $address: String
+    $locality: String
+    $city: String
+    $state: String
+    $landmark: String
+    $isDefault: Boolean
+  ) {
+    createUserAddress(
+      userId: $userId
+      name: $name
+      phone: $phone
+      pincode: $pincode
+      address: $address
+      locality: $locality
+      city: $city
+      state: $state
+      landmark: $landmark
+      isDefault: $isDefault
+    )
+  }
+`;
 
 export default function AddAddress() {
   const router = useRouter();
+  const { userId } = useUserData();
+
+  useEffect(() => {
+    if (!userId) {
+      router.replace("/auth/login");
+    }
+  }, [userId]);
+
+  const [createUserAddress] = useMutation(CREATE_USER_ADDRESS);
+
+  const [form, setForm] = useState({
+    userId : Number(userId),
+    name: "",
+    phone: "",
+    pincode: "",
+    address: "",
+    locality: "",
+    city: "",
+    state: "",
+    landmark: "",
+    isDefault: false,
+  });
+  if (!userId) return null;
+  const handleChange = (e: any) => {
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await createUserAddress({ variables: form });
+      router.push("/a/addresses");
+    } catch (error) {
+      console.error("Failed to create address:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col">
-      <div className="mb-8"></div>
+      <div className="mb-8" />
       <div className="max-w-xl mx-auto p-4">
         <h1 className="text-xl font-semibold mb-4">Add a new address</h1>
         <div className="space-y-3">
-          <input placeholder="Full Name" className="w-full border p-2 rounded" />
-          <input placeholder="Mobile Number" className="w-full border p-2 rounded" />
-          <input placeholder="Pincode" className="w-full border p-2 rounded" />
-          <input placeholder="Flat, House no., etc." className="w-full border p-2 rounded" />
-          <input placeholder="Area, Street, Village" className="w-full border p-2 rounded" />
-          <input placeholder="Landmark" className="w-full border p-2 rounded" />
+          <input name="name" placeholder="Full Name" className="w-full border p-2 rounded" onChange={handleChange} />
+          <input name="phone" placeholder="Mobile Number" className="w-full border p-2 rounded" onChange={handleChange} />
+          <input name="pincode" placeholder="Pincode" className="w-full border p-2 rounded" onChange={handleChange} />
+          <input name="address" placeholder="Flat, House no., etc." className="w-full border p-2 rounded" onChange={handleChange} />
+          <input name="locality" placeholder="Area, Street, Village" className="w-full border p-2 rounded" onChange={handleChange} />
+          <input name="landmark" placeholder="Landmark" className="w-full border p-2 rounded" onChange={handleChange} />
           <div className="flex gap-2">
-            <input placeholder="City" className="w-full border p-2 rounded" />
-            <select className="w-full border p-2 rounded">
+            <input name="city" placeholder="City" className="w-full border p-2 rounded" onChange={handleChange} />
+            <select className="w-full border p-2 rounded" onChange={handleChange}>
                 <option>Select State/UT</option>
                 <option value="Andhra Pradesh">Andhra Pradesh</option>
                 <option value="Arunachal Pradesh">Arunachal Pradesh</option>
@@ -59,9 +126,10 @@ export default function AddAddress() {
             </select>
           </div>
           <label className="flex items-center gap-2">
-            <input type="checkbox" /> Make this my default address
+            <input type="checkbox" name="isDefault" onChange={handleChange} />
+            Make this my default address
           </label>
-          <button className="bg-yellow-500 text-white px-4 py-2 rounded" onClick={() => router.push('/a/addresses')}>
+          <button className="bg-yellow-500 text-white px-4 py-2 rounded" onClick={handleSubmit}>
             Add address
           </button>
         </div>

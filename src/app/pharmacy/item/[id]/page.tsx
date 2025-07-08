@@ -2,7 +2,9 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Product } from '../../types/def';
-import { gql, useApolloClient } from '@apollo/client';
+import { gql, useApolloClient, useMutation } from '@apollo/client';
+import { ADD_CART_ITEM } from '../../ShopByCategory';
+import { GET_CART_COUNT, useUserData } from '@/app/lib/contexts/UserContext';
 
 const sampleImages = [
   '/images/image.png',
@@ -38,9 +40,32 @@ export default function ItemPage() {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const params = useParams();
     const productId : number = Number(params?.id ?? 0);
-
+    const { setItemNumberCart, userId } = useUserData();
     const client = useApolloClient();
     const scrollRef = useRef(null);
+
+    const [addCartItem] = useMutation(ADD_CART_ITEM);
+
+    const handleAddToCart = async (userId: number, productId: number, quantity: number = 1) => {
+      try {
+        const { data } = await addCartItem({
+          variables: { userId, productId, quantity },
+        });
+
+        if (data.addCartItem) {
+          const { data: countData } = await client.query({
+          query: GET_CART_COUNT,
+          variables: { userId },
+          fetchPolicy: "network-only",
+        });
+        setItemNumberCart(countData?.getUserCartCount);
+        } else {
+          console.error("Cart update failed");
+        }
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+      }
+    };
 
     useEffect(() => {
       window.scrollTo(0, 0);
@@ -137,7 +162,7 @@ export default function ItemPage() {
                 ))}
               </ul> */}
             </div>
-            <button className="bg-yellow-400 text-white px-4 py-2 rounded-lg hover:bg-yellow-500 w-full max-w-sm font-bold">
+            <button className="bg-yellow-400 text-white px-4 py-2 rounded-lg hover:bg-yellow-500 w-full max-w-sm font-bold" onClick={() => handleAddToCart(Number(userId), productId, 1)}>
               Add to Cart
             </button>
             <button className="bg-yellow-400 text-white px-4 py-2 rounded-lg hover:bg-yellow-500 w-full max-w-sm font-bold">

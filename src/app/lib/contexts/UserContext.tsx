@@ -1,43 +1,33 @@
 'use client';
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import {jwtDecode} from 'jwt-decode';
-
-interface DecodedToken {
-  email: string;
-  userId: string;
-}
-
-interface Address {
-  id: number;
-  user_id: number;
-  full_name: string;
-  mobile_number: string;
-  pincode: string;
-  house_address: string;
-  street_address: string;
-  landmark: string;
-  city: string;
-  state: string;
-  country: string;
-  defaultAddress: boolean;
-}
-
-interface UserContextType {
-  userName: string | null;
-  setUserName: (name: string | null) => void;
-  userId: string | undefined;
-  setUserId: (id: string | undefined) => void;
-  itemNumberCart: number;
-  setItemNumberCart: (count: number) => void;
-  address: Address[];
-  setAddress: (address: Address[]) => void;
-  selectedAddress: Address | null;
-  setSelectedAddress: (address: Address | null) => void;
-  setUserFromToken: (token: string) => void;
-}
+import { gql, useApolloClient } from '@apollo/client';
+import { Address, DecodedToken, UserContextType, } from './types/UserTypes';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
+
+export const GET_USER_ADDRESSES = gql`
+  query GetUserAddresses($userId: Int!) {
+    getUserAddresses(userId: $userId) {
+      id
+      name
+      phone
+      address
+      locality
+      city
+      state
+      pincode
+      landmark
+      isDefault
+    }
+  }
+`;
+
+export const GET_CART_COUNT = gql`
+  query GetUserCartCount($userId: Int!) {
+    getUserCartCount(userId: $userId)
+  }
+`
 
 export function UserContextProvider({ children }: { children: ReactNode }) {
   const [userName, setUserName] = useState<string | null>(null);
@@ -45,6 +35,7 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
   const [itemNumberCart, setItemNumberCart] = useState<number>(0);
   const [address, setAddress] = useState<Address[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const client = useApolloClient();
 
   const setUserFromToken = (token: string) => {
     try {
@@ -64,44 +55,41 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      setTimeout(() => {
-        const fakeCartItemCount = 3;
-        setItemNumberCart(fakeCartItemCount);
-      }, 500);
+    const getCartCount = async () => {
+      try {
+        if (userId) {
+          const { data } = await client.query({
+            query: GET_CART_COUNT,
+            variables: {userId}
+          })
+          setItemNumberCart(data?.getUserCartCount);
+        }
+      } catch(err) {
+          console.error("Failed to fetch addresses", err);
+      }
     }
+    getCartCount();
   }, [userId]);
 
   useEffect(() => {
-    if (userId) {
-      setTimeout(() => {
-        const fakeAddresses: Address[] = [
-          {
-            id: 1,
-            user_id: Number(userId),
-            full_name: 'Sarang Thakare',
-            mobile_number: '9011964178',
-            pincode: '444020',
-            house_address: 'IIT Indore',
-            street_address: 'Khandwa Road',
-            landmark: 'Near IT Park',
-            city: 'Indore',
-            state: 'MP',
-            country: 'India',
-            defaultAddress: true,
-          },
-        ];
-        setAddress(fakeAddresses);
-
-        const defaultAddr =
-          fakeAddresses.find((a) => a.defaultAddress) ?? fakeAddresses[0] ?? null;
-        setSelectedAddress(defaultAddr);
-      }, 500);
+    const getAddresses = async () => {
+      try {
+        if (userId) {
+          const { data }= await client
+            .query({
+              query: GET_USER_ADDRESSES,
+              variables: { userId },
+            })
+            const addresses = data?.getUserAddresses;
+            setAddress(addresses);
+            const defaultAddress = addresses.filter((t: Address) => {return t.isDefault} );
+            setSelectedAddress(defaultAddress[0]);
+        }
+      } catch(err) {
+          console.error("Failed to fetch addresses", err);
+      };
     }
-    else {
-      setSelectedAddress(null);
-      setItemNumberCart(0);
-    }
+    getAddresses();
   }, [userId]);
 
   return (

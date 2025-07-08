@@ -33,7 +33,7 @@ const CREATE_USER = gql`
 `;
 
 export default function SignUpForm() {
-  const router = useRouter()
+  const router = useRouter();
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -41,7 +41,7 @@ export default function SignUpForm() {
     phone: '',
     password: '',
   });
-  console.log(form)
+
   const [errors, setErrors] = useState({
     email: '',
     phone: '',
@@ -79,20 +79,21 @@ export default function SignUpForm() {
           });
         }, 3000)
       if (newErrors.email || newErrors.phone || newErrors.password) return;
+      console.log(form)
       const { data } = await createUser({
         variables: {
           ...form,
         },
       });
 
-    const token = data.createUser.token; 
+    const token = data.createUser.token;
 
     if (token) {
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(data.createUser.user));
     }
     window.location.href="/";
-      
+    
     } catch (err) {
         let message = 'Something went wrong';
         if (err instanceof ApolloError) {

@@ -1,7 +1,6 @@
 'use client'
 import { useUserData } from './lib/contexts/UserContext';
 import { useEffect, useState } from 'react';
-// import AddressModal from '../Authentication/AddressModal';
 import { useRouter } from "next/navigation";
 import { FaCartPlus, FaPhone, FaPhoneAlt, FaPhoneSlash, FaPhoneSquare, FaUser, FaMapMarkerAlt } from 'react-icons/fa';
 import Image from 'next/image';
@@ -35,7 +34,7 @@ export default function AuthNavbar() {
         <div className="ml-4 flex items-center gap-2 cursor-pointer">
           <FaMapMarkerAlt className="text-teal-600" />
         <div onClick={() => setShowAddressModal(true)}>
-            <p className="text-xs text-gray-500">Deliver to {selectedAddress?.full_name || 'Guest'}</p>
+            <p className="text-xs text-gray-500">Deliver to {selectedAddress?.name || 'Guest'}</p>
             <p className="text-sm font-semibold text-gray-800">{selectedAddress?.city} {selectedAddress?.pincode}</p>
         </div>
 </div>

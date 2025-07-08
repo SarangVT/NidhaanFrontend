@@ -1,7 +1,8 @@
 "use client";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useApolloClient, useLazyQuery, useMutation } from "@apollo/client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { GET_CART_COUNT, useUserData } from "../lib/contexts/UserContext";
 
 type Product = {
   id: string;
@@ -37,13 +38,19 @@ const GET_PRODUCTS_PAGINATED = gql`
   }
 `;
 
+export const ADD_CART_ITEM = gql`
+  mutation AddCartItem($userId: Int!, $productId: Int!, $quantity: Int) {
+    addCartItem(userId: $userId, productId: $productId, quantity: $quantity)
+  }
+`;
+
 export default function ShopByCategoryComp() {
   const router = useRouter();
-
+  const client = useApolloClient();
+  const { setItemNumberCart, userId} = useUserData();
   const [productsByTag, setProductsByTag] = useState<Record<string, Product[]>>({});
   const [cursor, setCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
-
   const fetchingRef = useRef(false);
 
   const [fetchProducts, { loading, error }] = useLazyQuery<GetProductsPaginatedResponse>(
@@ -82,8 +89,30 @@ export default function ShopByCategoryComp() {
     }
   );
 
+  const [addCartItem] = useMutation(ADD_CART_ITEM);
+
+  const handleAddToCart = async (userId: number, productId: number, quantity: number = 1) => {
+    try {
+      const { data } = await addCartItem({
+        variables: { userId, productId, quantity },
+      });
+
+      if (data.addCartItem) {
+        const { data: countData } = await client.query({
+        query: GET_CART_COUNT,
+        variables: { userId },
+        fetchPolicy: "network-only",
+      });
+      setItemNumberCart(countData?.getUserCartCount);
+      } else {
+        console.error("Cart update failed");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+  };
+
   useEffect(() => {
-    // Initial fetch only once
     if (!fetchingRef.current) {
       fetchingRef.current = true;
       fetchProducts({ variables: { cursor: null, limit: 20 } });
@@ -124,7 +153,7 @@ export default function ShopByCategoryComp() {
           </div>
           <div className="text-lg font-bold text-black">₹{item.current_price}</div>
         </div>
-        <button className="bg-yellow-400 rounded-lg p-2 text-white font-bold mt-4">
+        <button className="bg-yellow-400 rounded-lg p-2 text-white font-bold mt-4" onClick={() => handleAddToCart(Number(userId), Number(item.id), 1)}>
           Add To Cart
         </button>
       </div>

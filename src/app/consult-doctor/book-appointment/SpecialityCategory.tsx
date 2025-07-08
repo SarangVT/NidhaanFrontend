@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { FaCheck } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 type DoctorCategoryCardProps = {
   image: string;
@@ -50,7 +51,6 @@ export function DoctorCategoryCard({
     </div>
   );
 }
-
 
 export const categories = [
   {
@@ -140,8 +140,8 @@ export const categories = [
   },
 ];
 
-
 export default function SpecialityCategory() {
+  const router = useRouter();
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([]);
 
   const toggleSelect = (index: number) => {
@@ -165,7 +165,7 @@ export default function SpecialityCategory() {
         ))}
     </div>
 
-    <button className="mt-6 px-32 py-3 font-bold bg-teal-500 text-white rounded-lg shadow-lg shadow-gray-500">
+    <button className="mt-6 px-32 py-3 font-bold bg-teal-500 text-white rounded-lg shadow-lg shadow-gray-500" onClick={() => router.push(`/consult-doctor/speciality`)}>
         Book A Consultation
     </button>
     </div>

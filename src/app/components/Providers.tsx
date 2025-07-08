@@ -5,8 +5,10 @@ import ApolloWrapper from '../lib/ApolloWrapper';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
+    <ApolloWrapper>
     <UserContextProvider>
-      <ApolloWrapper>{children}</ApolloWrapper>
+      {children}
     </UserContextProvider>
+    </ApolloWrapper>
   );
 }

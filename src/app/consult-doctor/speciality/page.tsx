@@ -1,6 +1,26 @@
 import React from 'react';
 import DoctorCard from './DoctorCard';
 
+export const doctorSpecializations = [
+  'General Physician',
+  'Cardiologist',
+  'Endocrinologist',
+  'Orthopedic',
+  'Dermatologist',
+  'Sexologist',
+  'Pain Specialist',
+  'Pulmonologist',
+  'Gastroenterologist',
+  'Gynaecologist',
+  'Pediatrician',
+  'ENT Specialist',
+  'Proctologist',
+  'Nephrologist',
+  'Dentist',
+  'Neurologist',
+  'Dietitian'
+];
+
 const doctors = [
   {
     name: 'Dr. Liritha C',
@@ -9,10 +29,10 @@ const doctors = [
     qualifications: 'MBBS, MD (GENERAL MEDICINE)',
     specializations: ['General Physician', 'Internal Medicine'],
     location: 'Hyderabad',
-    hospital: 'Apollo 24|7 Virtual Clinic - Telangana, Hyderabad',
+    hospital: 'Apollo 24 | 7 Virtual Clinic - Telangana, Hyderabad',
     price: '499',
     availability: '8 minutes',
-    image: '/MentalHealth/profilePic.png',
+    image: '/MentalHealth/profilePi.png',
     showInstantBooking: true,
   },
   {
@@ -25,7 +45,7 @@ const doctors = [
     hospital: 'Fortis Clinic - Mumbai',
     price: '799',
     availability: '15 minutes',
-    image: '/MentalHealth/profilePic.png',
+    image: '/MentalHealth/profilePi.png',
     showInstantBooking: false,
   },
 ];
