@@ -39,3 +39,18 @@
 .animate-fadeInUp {
   animation: fadeInUp 0.8s ease-out forwards;
 }
+
+.ql-container {
+  border: none !important;
+}
+
+.ql-toolbar {
+  border: none !important;
+}
+
+.ql-editor {
+  min-height: 14rem;
+  padding: 1rem;
+  border: none;
+}
+

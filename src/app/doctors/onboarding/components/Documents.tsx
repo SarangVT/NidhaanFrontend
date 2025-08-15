@@ -221,7 +221,7 @@ export default function DocumentVerification({currentStep, setCurrentStep}: {cur
         <input
           value={gstNumber}
           onChange={handleChange}
-          placeholder="Enter GST Number"
+          placeholder="Enter Registration Number"
           className="w-full mt-1 p-2 rounded border border-gray-300 focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
         />
         {error && <p className="text-red-600 mt-1 text-sm"></p>}

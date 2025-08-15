@@ -102,7 +102,7 @@ export default function BankDetails({
           <span>Account Holder Name</span>
           <AiOutlineQuestionCircle
             className="font-bold"
-            title="Help: Enter the official name of your store"
+            title="Help: Enter the name who is using this account."
           />
         </label>
         <input
@@ -136,7 +136,7 @@ export default function BankDetails({
           <span>IFSC Code</span>
           <AiOutlineQuestionCircle
             className="font-bold"
-            title="Help: Enter the official name of your store"
+            title="Help: It is used to identify branch and bank, e.g SBIN0002712"
           />
         </label>
         <input

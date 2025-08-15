@@ -139,6 +139,7 @@ export default function ShopByCategoryComp() {
 
   const renderItem = (item: Product) => {
     const discount = Math.round(((item.mrp - item.current_price) * 100) / item.mrp);
+    console.log(item.image);
     return (
       <div key={item.id} className="flex flex-col min-w-60 max-w-60 mx-5">
         <div

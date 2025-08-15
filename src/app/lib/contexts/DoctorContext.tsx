@@ -48,7 +48,7 @@ export function DoctorContextProvider({ children }: { children: ReactNode }) {
         setDoctorFromToken(token);
       } catch (err) {
         console.error("Invalid token:", err);
-        localStorage.removeItem("DoctorAuthToken"); // Clean up broken token
+        localStorage.removeItem("DoctorAuthToken");
       }
     } else {
       localStorage.removeItem("DoctorAuthToken");

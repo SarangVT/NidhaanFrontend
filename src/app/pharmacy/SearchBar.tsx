@@ -13,6 +13,7 @@ const SEARCH_PRODUCTS = gql`
       id
       title
       product_details
+      image
     }
   }
 `

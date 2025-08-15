@@ -1,75 +1,33 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import ProgressTabs from './components/ProgressTabs';
-import BasicDetails from './components/BasicDetails';
-import DocumentVerification from './components/Documents';
-import BankDetails from './components/BankDetails';
-import StoreDetails from './components/StoreDetails';
-import { useDoctorData } from '@/app/lib/contexts/DoctorContext';
-import { gql, useApolloClient } from '@apollo/client';
+import Image from 'next/image';
+import SignUpForm from './SignUpForm';
 
-const DoctorSignupPage = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const { DoctorId } = useDoctorData();
-  const client = useApolloClient();
-
-  const fetchCurrentStep = gql`
-    query CurrentStep($DoctorId: Int!) {
-      currentStep(DoctorId: $DoctorId) {
-        curStep
-      }
-    }
-  `;
-
-  useEffect(() => {
-    const loadCurrentStep = async () => {
-      try {
-        const { data } = await client.query({
-          query: fetchCurrentStep,
-          variables: { DoctorId },
-          fetchPolicy: 'network-only',
-        });
-        if (data?.currentStep?.curStep !== undefined) {
-          setCurrentStep(data.currentStep.curStep);
-        }
-      } catch (err) {
-        console.error('Failed to fetch current step:', err);
-      }
-    };
-
-    if (DoctorId) {
-      loadCurrentStep();
-    }
-  }, [DoctorId, client]);
-
-  const storeDetails = {
-    storeName: '',
-    pharmacistName: '',
-    pharmacistRegNo: '',
-    inTime: '',
-    outTime: '',
-    workingDays: [],
-    acceptsReturns: false,
-    address: '',
-    pincode: '',
-    city: '',
-    state: '',
-    latitude: null,
-    longitude: null,
-  };
-
-  const steps = [
-    <BasicDetails currentStep={currentStep} setCurrentStep={setCurrentStep} />,
-    <DocumentVerification currentStep={currentStep} setCurrentStep={setCurrentStep} />,
-    <BankDetails currentStep={currentStep} setCurrentStep={setCurrentStep} />,
-  ];
-
+export default function SignupPage() {
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <ProgressTabs currentStep={currentStep} setCurrentStep={setCurrentStep} />
-      <div className="flex p-6">{steps[currentStep]}</div>
-    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2">
+        <div className="hidden md:block">
+          <Image
+            width={673}
+            height={678}
+            src="/auth.png"
+            alt="Authentication Illustration"
+            className="w-full h-4/5 object-contain"
+          />
+        </div>
+        <div className="flex justify-center bg-white p-4">
+        <div className="w-full max-w-xl rounded-2xl shadow-xl border border-green-200 p-12 space-y-8 self-start">
+            <h1 className="text-3xl font-bold text-[#129990] text-center">Welcome To The Family</h1>
+            <SignUpForm/>
+          </div>
+        </div>
+        <div className="md:hidden">
+          <Image
+            width={600}
+            height={3000}
+            src="/auth.png"
+            alt="Authentication Illustration"
+            className="w-full h-40 object-cover mt-6"
+          />
+        </div>
+      </div>
   );
-};
-
-export default DoctorSignupPage;
+}

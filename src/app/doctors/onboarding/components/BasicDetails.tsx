@@ -1,7 +1,36 @@
 "use client";
 import { useState } from "react";
-import LanguageSelector from "./LanguageSelector";
-import SpecializationSelector from "./Specializations";
+import LanguageSelector from "../../dashboard/settings/LanguageSelector";
+import SpecializationSelector from "../../dashboard/settings/Specializations";
+import { gql, useMutation } from "@apollo/client";
+
+const CREATE_BASIC_DETAILS = gql`
+  mutation CreateBasicDetails(
+    $name: String!
+    $qualifications: String!
+    $specializations: [String!]!
+    $location: String!
+    $hospital: String!
+    $fees: Int!
+    $desc: String!
+    $languages: [String!]!
+    $experience: String!
+  ) {
+    createBasicDetails(
+      name: $name
+      qualifications: $qualifications
+      specializations: $specializations
+      location: $location
+      hospital: $hospital
+      fees: $fees
+      desc: $desc
+      languages: $languages
+      experience: $experience
+    ) {
+      id
+    }
+  }
+`;
 
 export default function DoctorBasicDetails({currentStep, setCurrentStep}: {currentStep: number, setCurrentStep: (index: number)=> void}) {
   const [formData, setFormData] = useState({
@@ -13,6 +42,7 @@ export default function DoctorBasicDetails({currentStep, setCurrentStep}: {curre
     fees: "",
     desc: "",
   });
+  const [createBD, {loading, error}] = useMutation(CREATE_BASIC_DETAILS);
   const [languages, setLanguages] = useState<string[]>([]);
   const [specializations, setSpecializations] = useState<string[]>([]);
   const [expValue, setExpValue] = useState<string | undefined>("0");
@@ -24,13 +54,29 @@ export default function DoctorBasicDetails({currentStep, setCurrentStep}: {curre
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const fullFormData = {
-    ...formData,
-    languages,
-    specializations,
-    experience: expValue+expUnit,
-    };
     e.preventDefault();
+    try {
+      const fullFormData = {
+        name: formData.name,
+        qualifications: formData.qualifications,
+        specializations,
+        location: formData.location,
+        hospital: formData.hospital,
+        fees: parseInt(formData.fees),
+        desc: formData.desc,
+        languages,
+        experience: expValue + expUnit,
+      };
+      console.log(fullFormData)
+      const {data} = await createBD({
+        variables : {
+          ...fullFormData,
+          fees: parseInt(formData.fees),
+        }
+      });
+    } catch(error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -125,7 +171,8 @@ export default function DoctorBasicDetails({currentStep, setCurrentStep}: {curre
       <label htmlFor="fees" className="text-md font-semibold text-gray-700">Consultation Fee</label>
       <input
         type="number"
-        name="price"
+        min="0"
+        name="fees"
         id="fees"
         placeholder="Consultation Fee (In INR)"
         value={formData.fees}
@@ -150,7 +197,7 @@ export default function DoctorBasicDetails({currentStep, setCurrentStep}: {curre
       />
     </div>
       <div className="flex justify-center mt-12">
-        <button className="w-full max-w-md bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 rounded-xl">
+        <button onClick={handleSubmit} className="w-full max-w-md bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 rounded-xl">
           Save and Continue
         </button>
       </div>
