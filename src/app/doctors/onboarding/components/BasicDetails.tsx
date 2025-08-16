@@ -3,9 +3,12 @@ import { useState } from "react";
 import LanguageSelector from "../../dashboard/settings/LanguageSelector";
 import SpecializationSelector from "../../dashboard/settings/Specializations";
 import { gql, useMutation } from "@apollo/client";
+import { useDoctorData } from "@/app/lib/contexts/DoctorContext";
+import { useRouter } from "next/navigation";
 
 const CREATE_BASIC_DETAILS = gql`
   mutation CreateBasicDetails(
+    $id: Int!
     $name: String!
     $qualifications: String!
     $specializations: [String!]!
@@ -17,6 +20,7 @@ const CREATE_BASIC_DETAILS = gql`
     $experience: String!
   ) {
     createBasicDetails(
+      id: $id
       name: $name
       qualifications: $qualifications
       specializations: $specializations
@@ -33,49 +37,64 @@ const CREATE_BASIC_DETAILS = gql`
 `;
 
 export default function DoctorBasicDetails({currentStep, setCurrentStep}: {currentStep: number, setCurrentStep: (index: number)=> void}) {
+  const { DoctorId } = useDoctorData();
+  const router = useRouter();
+  const [saveError, setSaveError] = useState("");
   const [formData, setFormData] = useState({
+    id: DoctorId || 0,
     name: "",
     qualifications: "",
-    specializations: "",
     location: "",
     hospital: "",
     fees: "",
     desc: "",
   });
-  const [createBD, {loading, error}] = useMutation(CREATE_BASIC_DETAILS);
+
   const [languages, setLanguages] = useState<string[]>([]);
   const [specializations, setSpecializations] = useState<string[]>([]);
-  const [expValue, setExpValue] = useState<string | undefined>("0");
+  const [expValue, setExpValue] = useState<string>("0");
   const [expUnit, setExpUnit] = useState<string>("Years");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const [createBD, { loading, error }] = useMutation(CREATE_BASIC_DETAILS);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!DoctorId) {
+      router.push("/doctors/login");
+      return;
+    }
+    if (
+      !formData.name ||
+      !formData.qualifications ||
+      !formData.location ||
+      !formData.hospital ||
+      !formData.fees ||
+      !formData.desc ||
+      specializations.length === 0 ||
+      languages.length === 0
+    ) {
+      setSaveError("Please fill in all required fields.");
+      return;
+    }
+    const payload = {
+      ...formData,
+      fees: parseInt(formData.fees),
+      specializations,
+      languages,
+      experience: `${expValue} ${expUnit}`,
+    };
     try {
-      const fullFormData = {
-        name: formData.name,
-        qualifications: formData.qualifications,
-        specializations,
-        location: formData.location,
-        hospital: formData.hospital,
-        fees: parseInt(formData.fees),
-        desc: formData.desc,
-        languages,
-        experience: expValue + expUnit,
-      };
-      console.log(fullFormData)
-      const {data} = await createBD({
-        variables : {
-          ...fullFormData,
-          fees: parseInt(formData.fees),
-        }
-      });
-    } catch(error) {
-      console.log(error);
+      await createBD({ variables: payload });
+      setCurrentStep(currentStep + 1);
+    } catch (err) {
+      console.error("Error submitting details:", err);
     }
   };
 
@@ -196,11 +215,19 @@ export default function DoctorBasicDetails({currentStep, setCurrentStep}: {curre
         required
       />
     </div>
-      <div className="flex justify-center mt-12">
-        <button onClick={handleSubmit} className="w-full max-w-md bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 rounded-xl">
-          Save and Continue
-        </button>
-      </div>
+    <div className="flex flex-col items-center mt-12">
+      {saveError && (
+        <p className="text-red-600 text-md font-medium mb-3 text-center">
+          {saveError}
+        </p>
+      )}
+      <button
+        onClick={handleSubmit}
+        className="w-full max-w-md bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 rounded-xl"
+      >
+        Save and Continue
+      </button>
+    </div>
     </div>
   );
 }

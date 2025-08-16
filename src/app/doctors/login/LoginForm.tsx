@@ -8,18 +8,21 @@ import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import Link from "next/link";
 import { BACKEND_URL } from "@/app/lib/utils";
+import { useDoctorData } from "@/app/lib/contexts/DoctorContext";
 
 const VERIFY_DOCTOR = gql`
-  mutation VerifyDoctor($email: String!, $password: String!, $phone: String!) {
+  mutation VerifyDoctor($email: String, $password: String!, $phone: String) {
     verifyDoctor(email: $email, password: $password, phone: $phone) {
-      token
-      doctor
+      id
+      email
+      registrationComplete
     }
   }
 `;
 
 export default function LoginForm() {
   const router = useRouter();
+  const { setDoctorId } = useDoctorData();
   const [verifyDoctor, { loading }] = useMutation(VERIFY_DOCTOR);
 
   const [form, setForm] = useState({ contact: "", password: "" });
@@ -59,13 +62,19 @@ export default function LoginForm() {
           phone: isPhone(form.contact) ? form.contact : "",
           password: form.password,
         },
+        context: {
+          fetchOptions: {
+            credentials: "include",
+          },
+        },
       });
-
-      const token = data.verifyDoctor.token;
-      if (token) {
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("user", JSON.stringify(data.verifyDoctor.user));
-        router.push("/");
+      if(!data.verifyDoctor.registrationComplete) {
+            setDoctorId(data.verifyDoctor.id);
+            router.push('/doctors/onboarding');
+      }
+      else {
+        setDoctorId(data.verifyDoctor.id);
+        router.push('/doctors/dashboard');
       }
     } catch (err) {
       let message = "Something went wrong";
@@ -158,7 +167,14 @@ export default function LoginForm() {
             },
             { withCredentials: true }
           );
-          console.log('User logged in:', res.data);
+          if(!res.data.registrationComplete) {
+            setDoctorId(res.data.id);
+            router.push('/doctors/onboarding');
+          }
+          else {
+            setDoctorId(res.data.id)
+            router.push('/doctors/dashboard');
+          }        
         }}
         onError={() => {
           console.log('Login Failed');

@@ -2,20 +2,27 @@
 
 import { useState } from "react";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
+import { gql, useMutation } from "@apollo/client"
+import { useRouter } from "next/navigation";
 
-export default function BankDetails({
-  currentStep,
-  setCurrentStep,
-}: {
-  currentStep: number;
-  setCurrentStep: (index: number) => void;
-}) {
+const UPDATE_BANK_DETAILS = gql`
+  mutation UpdateDoctorBankDetails($accountHolderName: String!, $bankAccountNumber: String!, $bankIFSCCode: String!) {
+    updateDoctorBankDetails(
+      accountHolderName: $accountHolderName
+      bankAccountNumber: $bankAccountNumber
+      bankIFSCCode: $bankIFSCCode
+    )
+  }
+`
+
+export default function BankDetails({currentStep, setCurrentStep,}: {currentStep: number;setCurrentStep: (index: number) => void;}) {
   const [form, setForm] = useState({
     accountHolderName: "",
     bankAccountNumber: "",
     reEnterBankAccountNumber: "",
     bankIFSCCode: "",
   });
+  const router = useRouter();
   const [errors, setErrors] = useState({
     accountHolderName: "",
     bankAccountNumber: "",
@@ -23,7 +30,7 @@ export default function BankDetails({
     bankIFSCCode: "",
   });
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
-
+  const [updateBankDetails] = useMutation(UPDATE_BANK_DETAILS)
   const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,8 +48,8 @@ export default function BankDetails({
       bankIFSCCode: ifscRegex.test(form.bankIFSCCode.trim())
         ? ""
         : "Enter a valid IFSC code (e.g., ABCD0123456)",
-    };
-    setErrors(newErrors);
+    }
+    setErrors(newErrors)
 
     if (
       newErrors.accountHolderName ||
@@ -50,16 +57,25 @@ export default function BankDetails({
       newErrors.reEnterBankAccountNumber ||
       newErrors.bankIFSCCode
     ) {
-      return;
+      return
     }
 
     try {
-      console.log("Submitting:", form);
-      // Perform your actual bank details submission here
+      const { data } = await updateBankDetails({
+        variables: {
+          accountHolderName: form.accountHolderName.trim(),
+          bankAccountNumber: form.bankAccountNumber.trim(),
+          bankIFSCCode: form.bankIFSCCode.trim(),
+        },
+        context: { fetchOptions: { credentials: "include" } },
+      })
+      setPopupMessage("Bank details updated successfully!")
+      router.push('/doctors/dashboard');
     } catch (error) {
-      setPopupMessage("Something went wrong, please try again later.");
+      console.error(error)
+      setPopupMessage("Something went wrong, please try again later.")
     }
-  };
+  }
 
   return (
     <div className="w-full p-6 max-w-md">
@@ -99,7 +115,7 @@ export default function BankDetails({
 
       <div className="mb-4">
         <label className="text-gray-700 font-semibold flex items-center space-x-1 mb-2">
-          <span>Account Holder Name</span>
+          <span>Bank Account Number</span>
           <AiOutlineQuestionCircle
             className="font-bold"
             title="Help: Enter the name who is using this account."

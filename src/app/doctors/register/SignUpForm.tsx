@@ -1,58 +1,57 @@
 "use client";
-import { useState } from 'react';
-import { gql, useMutation, ApolloError } from '@apollo/client';
-import { FcGoogle } from 'react-icons/fc';
-import { useRouter } from 'next/navigation';
-import { AiOutlineMail, AiOutlineLock, AiOutlinePhone } from 'react-icons/ai';
+import { useState } from "react";
+import { gql, useMutation, ApolloError } from "@apollo/client";
+import { FcGoogle } from "react-icons/fc";
+import { useRouter } from "next/navigation";
+import { AiOutlineMail, AiOutlineLock, AiOutlinePhone } from "react-icons/ai";
+import { BACKEND_URL } from "@/app/lib/utils";
+import axios from "axios";
+import { GoogleLogin } from "@react-oauth/google";
+import { useDoctorData } from "@/app/lib/contexts/DoctorContext";
 
-const CREATE_USER = gql`
-  mutation CreateUser(
-    $firstName: String!
-    $lastName: String!
+const CREATE_DOCTOR = gql`
+  mutation CreateDoctor(
+    $name: String!
     $email: String!
     $password: String!
     $phone: String!
   ) {
-    createUser(
-      firstName: $firstName
-      lastName: $lastName
+    createDoctor(
+      name: $name
       email: $email
       password: $password
       phone: $phone
     ) {
-      token
-      user {
-        id
-        firstName
-        lastName
-        email
-        phone
-      }
+      id
+      email
+      registrationComplete
     }
   }
 `;
 
-export default function SignUpForm() {
+export default function DoctorSignUpForm() {
   const router = useRouter();
+  const { setDoctorId } = useDoctorData();
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState({
-    email: '',
-    phone: '',
-    password: '',
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
   });
 
-  const [createUser, { loading, error }] = useMutation(CREATE_USER);
+  const [createDoctor, { loading }] = useMutation(CREATE_DOCTOR);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
-  const checkEmail = (input: string) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(input)
-  const checkPhone = (input: string) => /^\+?[0-9]{7,15}$/.test(input)
+  const checkEmail = (input: string) =>
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(input);
+  const checkPhone = (input: string) => /^\+?[0-9]{7,15}$/.test(input);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -60,56 +59,49 @@ export default function SignUpForm() {
 
   const handleSignUp = async () => {
     try {
-        const newErrors = { email: '', phone: '', password: '' };
-        if (!checkEmail(form.email)) {
-          newErrors.email = 'Enter a valid email';
-        }
-        if (!checkPhone(form.phone)) {
-          newErrors.phone = 'Enter a valid 10-digit phone number';
-        }
-        if (form.password.length < 6) {
-          newErrors.password = 'Password must be at least 6 characters';
-        }
-        setErrors(newErrors);
-        setTimeout(() => {
-          setErrors({
-            email: '',
-            phone: '',
-            password: '',
-          });
-        }, 3000)
-      if (newErrors.email || newErrors.phone || newErrors.password) return;
-      console.log(form)
-      const { data } = await createUser({
+      const newErrors = { name: "", email: "", phone: "", password: "" };
+      if(form.name=="") newErrors.name = "Enter your name";
+      if (!checkEmail(form.email)) {
+        newErrors.email = "Enter a valid email";
+      }
+      if (!checkPhone(form.phone)) {
+        newErrors.phone = "Enter a valid phone number";
+      }
+      if (form.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
+
+      setErrors(newErrors);
+
+      setTimeout(() => {
+        setErrors({ name: "", email: "", phone: "", password: "" });
+      }, 3000);
+
+      if (newErrors.name || newErrors.email || newErrors.phone || newErrors.password) return;
+
+      const { data } = await createDoctor({
         variables: {
-          ...form,
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          password: form.password,
+        },
+        context: {
+          fetchOptions: {
+            credentials: "include",
+          },
         },
       });
-
-    const token = data.createUser.token;
-
-    if (token) {
-      localStorage.setItem('doctorToken', token);
-      localStorage.setItem('user', JSON.stringify(data.createUser.user));
-    }
-    window.location.href="/";
-    
+      setDoctorId(data.createDoctor.id);
+      router.push("/doctors/onboarding");
     } catch (err) {
-        let message = 'Something went wrong';
-        if (err instanceof ApolloError) {
-          message = err.graphQLErrors?.[0]?.message || err.message;
-        }
-        setPopupMessage(message);
+      let message = "Something went wrong";
+      if (err instanceof ApolloError) {
+        message = err.graphQLErrors?.[0]?.message || err.message;
       }
-  };
-
-  const handleGoogleSignUp = async () => {
-    try {
-
-    } catch(err) {
-
+      setPopupMessage(message);
     }
-  }
+  };
 
   return (
     <div className="w-full p-6 pb-0">
@@ -127,27 +119,20 @@ export default function SignUpForm() {
         </div>
       )}
 
-      <div className="flex w-full gap-4 mb-4">
-        <div className="w-1/2">
-          <input
-            name="firstName"
-            placeholder="First Name"
-            value={form.firstName}
-            onChange={handleChange}
-            className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition"
-          />
-        </div>
-        <div className="w-1/2">
-          <input
-            name="lastName"
-            placeholder="Last Name"
-            value={form.lastName}
-            onChange={handleChange}
-            className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition"
-          />
-        </div>
+      <div className="mb-4">
+        <input
+          name="name"
+          placeholder="Full Name"
+          value={form.name}
+          onChange={handleChange}
+          className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition"
+        />
+        {errors.name && (
+        <p className="text-red-600 text-sm font-medium">
+          {errors.name}
+        </p>
+      )}
       </div>
-
       <div className="mb-4">
         <div className="relative">
           <input
@@ -163,7 +148,9 @@ export default function SignUpForm() {
           </div>
         </div>
         {errors.email && (
-          <p className="text-red-600 text-sm font-medium mt-1">{errors.email}</p>
+          <p className="text-red-600 text-sm font-medium">
+            {errors.email}
+          </p>
         )}
       </div>
 
@@ -181,7 +168,9 @@ export default function SignUpForm() {
           </div>
         </div>
         {errors.phone && (
-          <p className="text-red-600 text-sm font-medium mt-1">{errors.phone}</p>
+          <p className="text-red-600 text-sm font-medium">
+            {errors.phone}
+          </p>
         )}
       </div>
 
@@ -200,7 +189,9 @@ export default function SignUpForm() {
           </div>
         </div>
         {errors.password && (
-          <p className="text-red-600 text-sm font-medium mt-1">{errors.password}</p>
+          <p className="text-red-600 text-sm font-medium">
+            {errors.password}
+          </p>
         )}
       </div>
 
@@ -209,7 +200,7 @@ export default function SignUpForm() {
         disabled={loading}
         className="w-full bg-teal-600 text-white py-3 rounded-md font-semibold hover:bg-teal-700 transition disabled:bg-teal-300"
       >
-        {loading ? 'Signing up...' : 'Sign Up'}
+        {loading ? "Signing up..." : "Sign Up"}
       </button>
 
       <div className="flex items-center justify-center gap-2 my-4">
@@ -217,14 +208,35 @@ export default function SignUpForm() {
         <span className="text-green-500 text-sm">or</span>
         <div className="h-px bg-green-300 w-full" />
       </div>
-      <button
-        className="w-full flex items-center gap-4 shadow-lg font-bold py-3 mt-8 rounded-lg transition-colors border border-teal-600 text-teal-600 hover:bg-gray-50 px-4"
-        onClick={handleGoogleSignUp}
-      >
-        <FcGoogle className="text-2xl" />
-        <span className="flex-1 text-centre">Continue with Google</span>
-      </button>
+
+      <GoogleLogin
+        type={"standard"}
+        theme={"outline"}
+        size={"large"}
+        text={"signin_with"}
+        shape={"rectangular"}
+        logo_alignment={"center"}
+        onSuccess={async (credentialResponse) => {
+          const res = await axios.post(
+            `${BACKEND_URL}/google/login/doctor`,
+            {
+              token: credentialResponse.credential,
+            },
+            { withCredentials: true }
+          );
+          if(!res.data.registrationComplete) {
+            setDoctorId(res.data.id);
+            router.push('/doctors/onboarding');
+          }
+          else {
+            setDoctorId(res.data.id)
+            router.push('/doctors/dashboard');
+          }
+        }}
+        onError={() => {
+          console.log("Google Login Failed");
+        }}
+      />
     </div>
   );
-
 }

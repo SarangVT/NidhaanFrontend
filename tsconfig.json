@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/mental-health/questions/page.tsx", "src/app/mental-health/questions/QuestionAns.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/mental-health/questions/page.tsx", "src/app/mental-health/questions/QuestionAns.tsx", "middleware.ts"],
   "exclude": ["node_modules"]
 }

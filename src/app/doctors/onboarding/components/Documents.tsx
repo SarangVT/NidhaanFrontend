@@ -1,154 +1,103 @@
-'use client';
-import React, { useState } from 'react';
-import { gql, useMutation } from '@apollo/client';
-import { jwtDecode } from 'jwt-decode';
+'use client'
+import React, { useState, useEffect } from 'react'
+import { gql, useMutation, useApolloClient } from '@apollo/client'
 
-interface GSTDetails {
-  tradeName: string;
-  gstNumber: string;
-  gstType: string;
-  legalName: string;
-  address: string;
-}
-
-type SellerDocument  = {
-  sellerId: number;
-  type: string,
-  url: string,
-}
-
-const UPDATE_GST = gql`
-  mutation UpdateGST($gstNumber: String!, $documentGST: DocumentInput!) {
-    updateGST(gstNumber: $gstNumber, documentGST: $documentGST) 
+const UPLOAD_DOCUMENT = gql`
+  mutation UploadDocument($document: DoctorDocumentInput!, $gstNumber: String) {
+    uploadDoctorDocument(document: $document, gstNumber: $gstNumber)
   }
-`;
+`
 
-export default function DocumentVerification({currentStep, setCurrentStep}: {currentStep: number, setCurrentStep: (index: number)=> void}) {
-  const [createUser, { loading, error }] = useMutation(UPDATE_GST);
-  const [fetchedDetails, setFetchedDetails] = useState<GSTDetails | null>(null);
-  const [gstNumber, setGstNumber] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState('');
+const GET_UPLOAD_URL = gql`
+  query GetUploadUrl($filename: String!, $type: String!) {
+    getDoctorDocUrl(filename: $filename, type: $type) {
+      url
+      key
+    }
+  }
+`
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setGstNumber(e.target.value);
-  };
-  
-  const handleVerifyGST = async () => {
-    // if (!gstNumber || gstNumber.length !== 15) {
-    //   setError('Please enter a valid 15 character GST Number');
-    //   return;
-    // }
+export default function DocumentVerification({ currentStep, setCurrentStep }: { currentStep: number, setCurrentStep: (index: number) => void }) {
+  const client = useApolloClient()
+  const [uploading, setUploading] = useState<{ [key: string]: boolean }>({})
+  const [uploadMessage, setUploadMessage] = useState<{ [key: string]: string }>({})
+  const [uploaded, setUploaded] = useState<{ [key: string]: boolean }>({ gst: false, reg: false, degree: false })
+  const [gstNumber, setGstNumber] = useState('')
+  const [selectedGSTFile, setSelectedGSTFile] = useState<File | null>(null)
+  const [selectedRegFile, setSelectedRegFile] = useState<File | null>(null)
+  const [selectedDegreeFile, setSelectedDegreeFile] = useState<File | null>(null)
+
+  const [uploadDocument] = useMutation(UPLOAD_DOCUMENT)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setGstNumber(e.target.value)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'gst' | 'reg' | 'degree') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) return
+    const validTypes = ['application/pdf','image/jpeg','image/jpg','image/png']
+    if (!validTypes.includes(file.type)) return
+    if (type === 'gst') setSelectedGSTFile(file)
+    if (type === 'reg') setSelectedRegFile(file)
+    if (type === 'degree') setSelectedDegreeFile(file)
+    setUploadMessage(m => ({ ...m, [type]: '' }))
+  }
+
+  const handleUploadDocument = async (file: File | null, docType: 'GST_CERTIFICATE' | 'REGISTRATION_CERTIFICATE' | 'DEGREE_CERTIFICATE', key: string) => {
+    if (!file) return
+    setUploading(u => ({ ...u, [key]: true }))
+    setUploadMessage(m => ({ ...m, [key]: '' }))
     try {
-      const gstData: GSTDetails = {
-        tradeName: 'NIDHAAN PVT LTD',
-        gstNumber,
-        gstType: 'Regular',
-        legalName: 'XPEDICR PRIVATE LIMITED',
-        address:
-          'Bengaluru Urban, KARNATAKA - 560055',
-      };
-      setFetchedDetails(gstData);
+      const filename = `${Date.now()}_${file.name}`
+      const { data } = await client.query({
+        query: GET_UPLOAD_URL,
+        variables: { filename, type: docType },
+        context: { fetchOptions: { credentials: 'include' } },
+        fetchPolicy: 'no-cache'
+      })
+      const uploadUrl = data.getDoctorDocUrl.url
+      const fileKey = data.getDoctorDocUrl.key
+      await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": "application/octet-stream" }, body: file })
+      const payload = {
+        document: { url: fileKey, type: docType },
+        ...(docType === "GST_CERTIFICATE" ? { gstNumber } : {})
+      }
+      await uploadDocument({
+        variables: payload,
+        context: { fetchOptions: { credentials: "include" } },
+      })
+      setUploadMessage(m => ({ ...m, [key]: `${docType.replace('_', ' ')} uploaded successfully!` }))
+      setUploaded(u => ({ ...u, [key]: true }))
     } catch {
+      setUploadMessage(m => ({ ...m, [key]: `Error uploading ${docType.replace('_', ' ')}. Try again later.` }))
+      setUploaded(u => ({ ...u, [key]: false }))
     } finally {
+      setUploading(u => ({ ...u, [key]: false }))
     }
-  };
+  }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 1024 * 1024) {
-      alert('File must be smaller than 1MB');
-      return;
+  useEffect(() => {
+    if (uploaded.gst && uploaded.reg && uploaded.degree) {
+      setCurrentStep(currentStep + 1)
     }
+  }, [uploaded, currentStep, setCurrentStep])
 
-    const validTypes = ['application/pdf','image/jpeg','image/jpg','image/png'];
-    if (!validTypes.includes(file.type)) {
-      alert('Allowed file types: PDF, JPEG, JPG, PNG');
-      return;
-    }
-    setSelectedFile(file);
-    setUploadMessage('');
-  };
-  
-  const handleUploadGST = async () => {
-    if (!selectedFile) {
-      alert('Please select a GST document first.');
-      return;
-    }
-
-    setUploading(true);
-    setUploadMessage('');
-
-    try {
-      const token = localStorage.getItem('sellerAuthToken');
-      const decoded: any = jwtDecode(token!);
-      const sellerId = decoded?.sellerId;
-
-      const filename = `${Date.now()}_${selectedFile.name}`;
-      const type = "GST_CERTIFICATE";
-
-      const res = await fetch("http://localhost:8000/v1/graphql", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          query: `
-            query GetUploadUrl($filename: String!, $type: String!, $sellerId: String!) {
-              getUploadUrl(filename: $filename, type: $type, sellerId: $sellerId) {
-                url
-                key
-              }
-            }
-          `,
-          variables: {
-            filename,
-            type,
-            sellerId: sellerId.toString(),
-          },
-        }),
-      });
-
-      const { data } = await res.json();
-      console.log(data)
-      const uploadUrl = data.getUploadUrl.url;
-      const fileKey = data.getUploadUrl.key;
-
-      await fetch(uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/octet-stream",
-        },
-        body: selectedFile,
-      });
-
-      await createUser({
-        variables: {
-          gstNumber,
-          documentGST: {
-            url: fileKey,
-            type: "GST_CERTIFICATE",
-            sellerId: sellerId.toString(),
-          },
-        },
-      });
-
-      setUploadMessage("GST Document uploaded and linked successfully!");
-      setCurrentStep(currentStep+1);
-    } catch (err) {
-      setUploadMessage("Error uploading GST Document. Try again later.");
-      console.error(err);
-    } finally {
-      setUploading(false);
-    }
-  };
+  const renderFileUpload = (label: string, file: File | null, onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void, onUpload: () => void, id: string, key: string) => (
+    <div className="mt-4 space-y-2">
+      <label className="block text-gray-700 font-medium">{label}</label>
+      <input type="file" accept=".pdf,.jpeg,.jpg,.png" onChange={onFileChange} className="hidden" id={id}/>
+      <div className="flex flex-col space-y-2">
+        <label htmlFor={id} className="inline-block cursor-pointer bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded w-max">Choose Document</label>
+        {file && <p className="text-md font-semibold">{file.name}</p>}
+        <button onClick={onUpload} disabled={uploading[key] || !file} className="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded disabled:opacity-50 w-max">
+          {uploading[key] ? 'Uploading...' : 'Upload'}
+        </button>
+        {uploadMessage[key] && <p className={`text-sm mt-1 ${uploadMessage[key].includes('Error') ? 'text-red-600' : 'text-green-600'}`}>{uploadMessage[key]}</p>}
+      </div>
+    </div>
+  )
 
   return (
-    <div className="w-full max-w-2xl p-4 space-y-4">
+    <div className="w-full max-w-2xl p-4 space-y-6">
       <div>
         <label className="block text-gray-700 font-medium">15 digit GST Number</label>
         <input
@@ -157,137 +106,34 @@ export default function DocumentVerification({currentStep, setCurrentStep}: {cur
           placeholder="Enter GST Number"
           className="w-full mt-1 p-2 rounded border border-gray-300 focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
         />
-        {error && <p className="text-red-600 mt-1 text-sm"></p>}
       </div>
 
-      <button
-        onClick={handleVerifyGST}
-        disabled={loading}
-        className="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded disabled:opacity-50"
-      >
-        {loading ? 'Verifying...' : 'Verify GST Number'}
-      </button>
-
-      {fetchedDetails && (
-        <div className="bg-gray-100 p-4 rounded mt-4 space-y-2">
-          <h2 className="font-bold text-lg">Your GST Details</h2>
-          <p><strong>Trade Name:</strong> {fetchedDetails.tradeName}</p>
-          <p><strong>GST Number:</strong> {fetchedDetails.gstNumber}</p>
-          <p><strong>GST Type:</strong> {fetchedDetails.gstType}</p>
-          <p><strong>Legal Name:</strong> {fetchedDetails.legalName}</p>
-          <p><strong>Address:</strong> {fetchedDetails.address}</p>
-
-          <div className="mt-4 space-y-2">
-                <div className="space-y-2">
-                <input
-                    id="gst-file"
-                    type="file"
-                    accept=".pdf,.jpeg,.jpg,.png"
-                    onChange={handleFileChange}
-                    className="hidden"
-                />
-                <label
-                    htmlFor="gst-file"
-                    className="inline-block cursor-pointer bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-                >
-                    Choose GST Document
-                </label>
-          </div>
-
-            {selectedFile && (
-              <p className="text-gray-600 text-sm">Selected File: {selectedFile.name}</p>
-            )}
-            <p className="text-gray-500 text-sm">
-              ⚠️ Maximum file size: 1MB.<br/>Supported formats: PDF, JPEG, JPG, PNG.
-            </p>
-            <button
-              onClick={handleUploadGST}
-              disabled={uploading || !selectedFile}
-              className="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded disabled:opacity-50"
-            >
-              {uploading ? 'Uploading...' : 'Upload GST Document'}
-            </button>
-            {uploadMessage && (
-              <p className={`text-sm mt-2 ${uploadMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`} >
-                {uploadMessage}
-              </p>
-            )}
-          </div>
-        </div>
+      {renderFileUpload(
+        'GST Certificate',
+        selectedGSTFile,
+        e => handleFileChange(e, 'gst'),
+        () => handleUploadDocument(selectedGSTFile, 'GST_CERTIFICATE', 'gst'),
+        'gst-file',
+        'gst'
       )}
 
-      <div>
-        <label className="block text-gray-700 font-medium">Medical Council Registration Certificate</label>
-        <input
-          value={gstNumber}
-          onChange={handleChange}
-          placeholder="Enter Registration Number"
-          className="w-full mt-1 p-2 rounded border border-gray-300 focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
-        />
-        {error && <p className="text-red-600 mt-1 text-sm"></p>}
-      </div>
-    
-      <div className="p-2 rounded mt-4 space-y-2">
-        <div className="mt-4 space-y-2">
-              <div className="space-y-2">
-              <input
-                  id="gst-file"
-                  type="file"
-                  accept=".pdf,.jpeg,.jpg,.png"
-                  onChange={handleFileChange}
-                  className="hidden"
-              />
-              <label
-                  htmlFor="gst-file"
-                  className="inline-block cursor-pointer bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-              >
-                  Choose Registration Certificates
-              </label>
-        </div>
+      {renderFileUpload(
+        'Registration Certificate',
+        selectedRegFile,
+        e => handleFileChange(e, 'reg'),
+        () => handleUploadDocument(selectedRegFile, 'REGISTRATION_CERTIFICATE', 'reg'),
+        'reg-file',
+        'reg'
+      )}
 
-          {selectedFile && (
-            <p className="text-gray-600 text-sm">Selected File: {selectedFile.name}</p>
-          )}
-          <p className="text-gray-500 text-sm">
-            ⚠️ Maximum file size: 10MB.<br/>Supported formats: PDF, JPEG, JPG, PNG.
-          </p>
-          {uploadMessage && (
-            <p className={`text-sm mt-2 ${uploadMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`} >
-              {uploadMessage}
-            </p>
-          )}          
-        </div>
-      </div>
-      <div className="p-2 rounded mt-4 space-y-2">
-        <div className="mt-4 space-y-2">
-              <div className="space-y-2">
-              <input
-                  id="gst-file"
-                  type="file"
-                  accept=".pdf,.jpeg,.jpg,.png"
-                  onChange={handleFileChange}
-                  className="hidden"
-              />
-              <label
-                  htmlFor="gst-file"
-                  className="inline-block cursor-pointer bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-              >
-                  Choose Degree Certificate
-              </label>
-        </div>
-
-          {selectedFile && (
-            <p className="text-gray-600 text-sm">Selected File: {selectedFile.name}</p>
-          )}
-          <p className="text-gray-500 text-sm">
-            ⚠️ Maximum file size: 10MB. Upload all Certificates in a Single PDF<br/>Supported formats: PDF, JPEG, JPG, PNG.
-          </p>
-          {uploadMessage && (
-            <p className={`text-sm mt-2 ${uploadMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`} >
-              {uploadMessage}
-            </p>
-          )}          
-        </div>
-      </div>    </div>
-  );
+      {renderFileUpload(
+        'Degree Certificate',
+        selectedDegreeFile,
+        e => handleFileChange(e, 'degree'),
+        () => handleUploadDocument(selectedDegreeFile, 'DEGREE_CERTIFICATE', 'degree'),
+        'degree-file',
+        'degree'
+      )}
+    </div>
+  )
 }
