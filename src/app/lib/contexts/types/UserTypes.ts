@@ -29,4 +29,6 @@ export interface UserContextType {
   selectedAddress: Address | null;
   setSelectedAddress: (address: Address | null) => void;
   setUserFromToken: (token: string) => void;
+  selectedSpecialities: string[];
+  setSelectedSpecialities: (string: string[]) => void;
 }

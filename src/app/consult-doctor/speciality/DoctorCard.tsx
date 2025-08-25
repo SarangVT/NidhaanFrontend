@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import React from 'react';
 
 interface DoctorCardProps {
+  id: number;
   name: string;
   experience: string;
   languages: string[];
@@ -8,13 +10,14 @@ interface DoctorCardProps {
   specializations: string[];
   location: string;
   hospital: string;
-  price: string;
+  fees: string;
   availability: string;
   image: string;
   showInstantBooking?: boolean;
 }
 
 export default function DoctorCard({
+  id,
   name,
   experience,
   qualifications,
@@ -22,12 +25,13 @@ export default function DoctorCard({
   specializations,
   location,
   hospital,
-  price,
+  fees,
   availability,
   image,
   showInstantBooking = true,
 }: DoctorCardProps) {
   return (
+    <Link href={`/consult-doctor/doctorinfo/${id}`}>
     <div className="h-48 w-full max-w-2xl border rounded-lg p-4 flex justify-between items-start gap-4 shadow-sm bg-white">
       <div className="flex gap-4">
         <img
@@ -65,7 +69,7 @@ export default function DoctorCard({
         </div>
       </div>
       <div className="flex flex-col items-end justify-between h-full">
-        <p className="font-bold text-lg mb-2">₹{price}</p>
+        <p className="font-bold text-lg mb-2">₹{fees}</p>
         <div className="flex flex-col gap-2">
           {showInstantBooking && (
             <button className="text-white bg-orange-400 text-sm font-semibold rounded-md px-3 py-1 hover:bg-orange-500 transition">
@@ -82,5 +86,6 @@ export default function DoctorCard({
         </div>
       </div>
     </div>
+    </Link>
   );
 }

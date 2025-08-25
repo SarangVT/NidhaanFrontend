@@ -39,7 +39,7 @@ export default function ServicesNavbar() {
                 <div className="cursor-pointer" onClick={() => handleNavigate('/pharmacy')}>Medicines</div>
                 <div className="cursor-pointer" onClick={() => handleNavigate('/consult-doctor')}>Consult Doctor</div>
                 <div className="cursor-pointer" onClick={() => handleNavigate('/')}>Gym and Yoga</div>
-                <div className="cursor-pointer" onClick={() => handleNavigate('/')}>Diagnostics</div>
+                <div className="cursor-pointer" onClick={() => handleNavigate('/diagnostics')}>Diagnostics</div>
                 <div className="cursor-pointer" onClick={() => handleNavigate('/mental-health')}>Mental Health</div>
               </div>
             </div>
@@ -51,7 +51,7 @@ export default function ServicesNavbar() {
           <div className="cursor-pointer" onClick={() => router.push('/pharmacy')}>Medicines</div>
           <div className="cursor-pointer" onClick={() => router.push('/consult-doctor')}>Consult Doctor</div>
           <div className="cursor-pointer" onClick={() => router.push('/')}>Gym and Yoga</div>
-          <div className="cursor-pointer" onClick={() => router.push('/')}>Diagnostics</div>
+          <div className="cursor-pointer" onClick={() => router.push('/diagnostics')}>Diagnostics</div>
           <div className="cursor-pointer" onClick={() => router.push('/mental-health')}>Mental Health</div>
         </div>
       )}

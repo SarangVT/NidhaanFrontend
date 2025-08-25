@@ -35,6 +35,7 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
   const [itemNumberCart, setItemNumberCart] = useState<number>(0);
   const [address, setAddress] = useState<Address[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [selectedSpecialities, setSelectedSpecialities] = useState<string[]>([]);
   const client = useApolloClient();
 
   const setUserFromToken = (token: string) => {
@@ -106,6 +107,8 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
         selectedAddress,
         setSelectedAddress,
         setUserFromToken,
+        selectedSpecialities,
+        setSelectedSpecialities
       }}
     >
       {children}
@@ -129,6 +132,8 @@ export function useUserData() {
     selectedAddress,
     setSelectedAddress,
     setUserFromToken,
+    selectedSpecialities,
+    setSelectedSpecialities
   } = context;
 
   return {
@@ -143,5 +148,7 @@ export function useUserData() {
     selectedAddress,
     setSelectedAddress,
     setUserFromToken,
+    selectedSpecialities,
+    setSelectedSpecialities
   };
 }

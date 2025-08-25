@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { FaCheck } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { useUserData } from '@/app/lib/contexts/UserContext';
 
 type DoctorCategoryCardProps = {
   image: string;
@@ -142,6 +143,7 @@ export const categories = [
 
 export default function SpecialityCategory() {
   const router = useRouter();
+  const { setSelectedSpecialities } = useUserData();
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([]);
 
   const toggleSelect = (index: number) => {
@@ -151,6 +153,12 @@ export default function SpecialityCategory() {
         : [...prev, index]
     );
   };
+
+  const handleSubmit = () => {
+    const selectedCategories = selectedIndexes.map((i) => categories[i].title);
+    setSelectedSpecialities(selectedCategories);
+    router.push(`/consult-doctor/speciality`);
+  }
   
   return (
     <div className="w-full flex flex-col items-center">
@@ -165,7 +173,7 @@ export default function SpecialityCategory() {
         ))}
     </div>
 
-    <button className="mt-6 px-32 py-3 font-bold bg-teal-500 text-white rounded-lg shadow-lg shadow-gray-500" onClick={() => router.push(`/consult-doctor/speciality`)}>
+    <button className="mt-6 px-32 py-3 font-bold bg-teal-500 text-white rounded-lg shadow-lg shadow-gray-500" onClick={handleSubmit}>
         Book A Consultation
     </button>
     </div>
