@@ -352,10 +352,3 @@ For the full frontend experience, run these services alongside the Next.js app:
 | Backend REST API | `http://localhost:8000/google/login/doctor` | Doctor Google OAuth |
 | Chatbot API | `http://localhost:3001` | Chat text and document upload responses |
 | Meilisearch | `http://localhost:7700` | Product search and index upload |
-
-## Notes
-
-- This README describes only the frontend application in `frontend/`.
-- Several route pages are presentation-heavy, while pharmacy, auth, cart, doctor, and seller onboarding/dashboard flows are wired to GraphQL.
-- Backend URLs and Meilisearch keys are currently hardcoded in a few frontend files. For production, move them into environment variables.
-- `frontend/README.md` is intended to document the current codebase, not planned backend behavior.
