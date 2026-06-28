@@ -25,7 +25,7 @@ export default function OrderPage() {
               <p className="font-medium">Your available balance</p>
               <div className="flex items-center gap-2 mt-1">
                 <input type="radio" name="payment" disabled />
-                <span>Amazon Pay Balance ₹0.00 Unavailable</span>
+                <span>Nidhaan Pay Balance ₹0.00 Unavailable</span>
               </div>
               <p className="text-xs text-red-600">Insufficient balance.</p>
               <button className="text-blue-600 text-xs mt-1 hover:underline">Add money & get rewarded</button>
@@ -35,7 +35,7 @@ export default function OrderPage() {
               <p className="font-medium">UPI</p>
               <div className="flex items-center gap-2 mt-1">
                 <input type="radio" name="payment" />
-                <span>Amazon Pay UPI - State Bank of India **1552</span>
+                <span>Nidhaan Pay UPI - State Bank of India **1552</span>
               </div>
             </div>
 
